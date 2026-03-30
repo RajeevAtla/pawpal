@@ -78,6 +78,24 @@ class Owner:
 
         self.pets.append(pet)
 
+    def get_pet(self, pet_name: str) -> Optional[Pet]:
+        """Return a pet by name when present."""
+
+        for pet in self.pets:
+            if pet.name.lower() == pet_name.lower():
+                return pet
+        return None
+
+    def add_task_to_pet(self, pet_name: str, task: Task) -> bool:
+        """Add a task to a pet and report whether the pet was found."""
+
+        pet = self.get_pet(pet_name)
+        if pet is None:
+            return False
+
+        pet.add_task(task)
+        return True
+
     def get_all_tasks(self) -> list[tuple[Pet, Task]]:
         """Return every task across the owner's pets."""
 
