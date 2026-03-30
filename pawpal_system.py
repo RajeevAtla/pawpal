@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
+from datetime import datetime
+from datetime import timedelta
 from typing import Optional
 
 
@@ -21,6 +23,31 @@ class Task:
     def mark_complete(self) -> None:
         """Mark the task as completed."""
 
+        self.is_completed = True
+
+    def next_occurrence(self) -> Optional[Task]:
+        """Create the next recurring task when the frequency supports it."""
+
+        if self.frequency == "daily":
+            next_date = self.due_date + timedelta(days=1)
+        elif self.frequency == "weekly":
+            next_date = self.due_date + timedelta(days=7)
+        else:
+            return None
+
+        return Task(
+            description=self.description,
+            due_date=next_date,
+            due_time=self.due_time,
+            frequency=self.frequency,
+            priority=self.priority,
+        )
+
+    def sort_key(self) -> tuple[date, datetime]:
+        """Return a sortable key for date and time ordering."""
+
+        return self.due_date, datetime.strptime(self.due_time, "%H:%M")
+
 
 @dataclass
 class Pet:
@@ -33,6 +60,8 @@ class Pet:
 
     def add_task(self, task: Task) -> None:
         """Attach a task to this pet."""
+
+        self.tasks.append(task)
 
 
 @dataclass
@@ -47,8 +76,16 @@ class Owner:
     def add_pet(self, pet: Pet) -> None:
         """Add a pet to the owner's household."""
 
+        self.pets.append(pet)
+
     def get_all_tasks(self) -> list[tuple[Pet, Task]]:
         """Return every task across the owner's pets."""
+
+        all_tasks: list[tuple[Pet, Task]] = []
+        for pet in self.pets:
+            for task in pet.tasks:
+                all_tasks.append((pet, task))
+        return all_tasks
 
 
 class Scheduler:
