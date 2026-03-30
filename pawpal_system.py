@@ -99,6 +99,8 @@ class Scheduler:
     def sort_tasks_by_time(self) -> list[tuple[Pet, Task]]:
         """Return all tasks in chronological order."""
 
+        return sorted(self.owner.get_all_tasks(), key=lambda item: item[1].sort_key())
+
     def filter_tasks(
         self,
         *,
@@ -107,8 +109,66 @@ class Scheduler:
     ) -> list[tuple[Pet, Task]]:
         """Return tasks filtered by pet name and/or completion status."""
 
+        filtered_tasks = self.owner.get_all_tasks()
+
+        if pet_name is not None:
+            filtered_tasks = [
+                (pet, task)
+                for pet, task in filtered_tasks
+                if pet.name.lower() == pet_name.lower()
+            ]
+
+        if is_completed is not None:
+            filtered_tasks = [
+                (pet, task)
+                for pet, task in filtered_tasks
+                if task.is_completed == is_completed
+            ]
+
+        return sorted(filtered_tasks, key=lambda item: item[1].sort_key())
+
     def check_conflicts(self) -> list[str]:
         """Return non-fatal warnings for tasks scheduled at the same time."""
 
+        schedule_map: dict[tuple[date, str], list[str]] = {}
+
+        for pet, task in self.owner.get_all_tasks():
+            key = (task.due_date, task.due_time)
+            schedule_map.setdefault(key, []).append(f"{pet.name}: {task.description}")
+
+        warnings: list[str] = []
+        for (due_date, due_time), scheduled_items in schedule_map.items():
+            if len(scheduled_items) > 1:
+                joined_items = ", ".join(scheduled_items)
+                warnings.append(
+                    f"Conflict at {due_date.isoformat()} {due_time} for {joined_items}."
+                )
+
+        return warnings
+
     def mark_task_complete(self, pet_name: str, task_description: str) -> Optional[Task]:
         """Mark a task complete and create its next occurrence when needed."""
+
+        for pet, task in self.owner.get_all_tasks():
+            if pet.name != pet_name or task.description != task_description:
+                continue
+
+            task.mark_complete()
+            next_task = task.next_occurrence()
+            if next_task is not None:
+                pet.add_task(next_task)
+            return next_task
+
+        return None
+
+    def daily_schedule_lines(self) -> list[str]:
+        """Return a readable schedule summary for terminal and UI display."""
+
+        lines: list[str] = []
+        for pet, task in self.sort_tasks_by_time():
+            status = "done" if task.is_completed else "pending"
+            lines.append(
+                f"{task.due_date.isoformat()} {task.due_time} | {pet.name} | "
+                f"{task.description} | {task.priority} | {status}"
+            )
+        return lines
