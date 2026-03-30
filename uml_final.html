@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PawPal+ UML</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: #f5f1e8;
+        color: #1f2933;
+        font-family: Georgia, "Times New Roman", serif;
+      }
+
+      .frame {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 24px;
+        background: #fffdf8;
+        border: 2px solid #d9c7a2;
+        border-radius: 18px;
+        box-shadow: 0 24px 60px rgba(82, 57, 22, 0.12);
+      }
+
+      h1 {
+        margin: 0 0 16px;
+        font-size: 32px;
+      }
+
+      .mermaid {
+        overflow: auto;
+      }
+    </style>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+
+      mermaid.initialize({ startOnLoad: true, theme: "default" });
+    </script>
+  </head>
+  <body>
+    <div class="frame">
+      <h1>PawPal+ Final UML</h1>
+      <div class="mermaid">
+classDiagram
+class Task {
+  description
+  due_date
+  due_time
+  frequency
+  is_completed
+  priority
+  mark_complete()
+  next_occurrence()
+  sort_key()
+}
+
+class Pet {
+  name
+  species
+  age
+  tasks
+  add_task(task)
+}
+
+class Owner {
+  name
+  available_minutes
+  preferences
+  pets
+  add_pet(pet)
+  get_pet(pet_name)
+  add_task_to_pet(pet_name, task)
+  get_all_tasks()
+}
+
+class Scheduler {
+  owner
+  sort_tasks_by_time()
+  filter_tasks(pet_name, is_completed)
+  check_conflicts()
+  mark_task_complete(pet_name, task_description)
+  daily_schedule_lines()
+}
+
+Owner "1" --> "many" Pet : manages
+Pet "1" --> "many" Task : contains
+Scheduler --> Owner : reads
+Scheduler --> Task : sorts and completes
+      </div>
+    </div>
+  </body>
+</html>

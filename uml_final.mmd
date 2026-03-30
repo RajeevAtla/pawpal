@@ -1,0 +1,45 @@
+classDiagram
+class Task {
+  description
+  due_date
+  due_time
+  frequency
+  is_completed
+  priority
+  mark_complete()
+  next_occurrence()
+  sort_key()
+}
+
+class Pet {
+  name
+  species
+  age
+  tasks
+  add_task(task)
+}
+
+class Owner {
+  name
+  available_minutes
+  preferences
+  pets
+  add_pet(pet)
+  get_pet(pet_name)
+  add_task_to_pet(pet_name, task)
+  get_all_tasks()
+}
+
+class Scheduler {
+  owner
+  sort_tasks_by_time()
+  filter_tasks(pet_name, is_completed)
+  check_conflicts()
+  mark_task_complete(pet_name, task_description)
+  daily_schedule_lines()
+}
+
+Owner "1" --> "many" Pet : manages
+Pet "1" --> "many" Task : contains
+Scheduler --> Owner : reads
+Scheduler --> Task : sorts and completes
